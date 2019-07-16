@@ -72,8 +72,8 @@ const getSinglePrURL = `https://api.github.com/repos/${argv.owner}/${argv.repo}/
 
   // Two-factor auth.
   const otpEl = await page.$('#otp');
-  const inputs = await inquirer.prompt([{ type: 'input', name: 'code' }]);
-  await otpEl.type(inputs.code.toString());
+  const inputs = await inquirer.prompt([{ type: 'input', name: 'two-factor code' }]);
+  await otpEl.type(inputs['two-factor code'].toString());
   await otpEl.press('Enter');
 
   // Merge or update branch.
@@ -97,6 +97,7 @@ const getSinglePrURL = `https://api.github.com/repos/${argv.owner}/${argv.repo}/
         case Status.CHANGE_REQUEST:
           throw new Error(`unexpected status ${status} of PR`);
         case Status.UPDATABLE:
+          // Update branch.
           await sttEl.click();
           break;
         case Status.MERGABLE:
@@ -104,8 +105,6 @@ const getSinglePrURL = `https://api.github.com/repos/${argv.owner}/${argv.repo}/
           if (!pr) {
             throw new Error(`cannot get single pr with number ${argv.pr}`);
           }
-
-          // Update branch.
           await sttEl.click();
           const title = `${pr.title} (#${pr.number})`;
 
@@ -136,7 +135,7 @@ const getSinglePrURL = `https://api.github.com/repos/${argv.owner}/${argv.repo}/
     await page.waitFor(1000);
   }
   console.info(`${chalk.green('[success]')} PR ${argv.pr} merged`);
-  await page.close();
+  await browser.close();
 })();
 
 async function getStatus(elementHandle, page) {
